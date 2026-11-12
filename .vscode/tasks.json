@@ -36,12 +36,12 @@
       "detail": "Compile and run the file open in the editor"
     },
     {
-      "label": "Run (graphics.h)",
+      "label": "Run current file with import std",
       "type": "shell",
-      "command": "./run.sh -g -f examples/graphics_demo.cpp",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -Graphics -File examples/graphics_demo.cpp" },
+      "command": "./run.sh -i -f \"${relativeFile}\"",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -ImportStd -File \"${relativeFile}\"" },
       "problemMatcher": ["$gcc"],
-      "detail": "Link libbgi and run the graphics demo (Windows + MinGW)"
+      "detail": "C++23 std module build of the open file"
     },
     {
       "label": "Clean",

@@ -1,5 +1,8 @@
 // Default single file. Edit this, then press Run (or ./run.sh).
-// Build another file without editing this one: ./run.sh -f path/to/file.cpp
+//
+// Build a different file without touching this one:
+//   ./run.sh -f examples/hello.c
+//   ./run.sh -i -f examples/import_std.cpp   # C++23 `import std;`
 #include <iostream>
 
 int main() {

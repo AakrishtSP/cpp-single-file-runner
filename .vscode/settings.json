@@ -9,21 +9,23 @@
   "C_Cpp.default.cppStandard": "c++20",
   "C_Cpp.default.cStandard": "c17",
   "C_Cpp.default.includePath": [
-    "${workspaceFolder}/include"
+    "${workspaceFolder}/src",
+    "${workspaceFolder}"
   ],
   "C_Cpp.default.compilerArgs": [
     "-Wall",
     "-Wextra"
   ],
-  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
   "files.associations": {
     "*.h": "cpp",
     "*.inl": "cpp"
   },
   "files.exclude": {
-    "build": true
+    "build": true,
+    "build-import-std": true
   },
   "search.exclude": {
-    "build": true
+    "build": true,
+    "build-import-std": true
   }
 }

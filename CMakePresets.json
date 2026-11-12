@@ -15,10 +15,11 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     },
     {
-      "name": "graphics",
-      "displayName": "Debug + graphics.h (Ninja, Windows/MinGW)",
+      "name": "import-std",
+      "displayName": "Debug + import std (C++23)",
       "inherits": "default",
-      "cacheVariables": { "GRAPHICS": "ON" }
+      "binaryDir": "${sourceDir}/build-import-std",
+      "cacheVariables": { "IMPORT_STD": "ON", "CPP_STD": "23" }
     },
     {
       "name": "make",
@@ -31,7 +32,7 @@
   "buildPresets": [
     { "name": "default", "configurePreset": "default" },
     { "name": "release", "configurePreset": "release" },
-    { "name": "graphics", "configurePreset": "graphics" },
+    { "name": "import-std", "configurePreset": "import-std" },
     { "name": "make", "configurePreset": "make" }
   ]
 }

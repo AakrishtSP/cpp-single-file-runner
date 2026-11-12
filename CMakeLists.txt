@@ -1,10 +1,34 @@
 cmake_minimum_required(VERSION 3.20)
 
+# Options are declared before project() because `import std` must be gated
+# before a compiler is detected.
+set(CPP_STD "20" CACHE STRING "C++ standard: 17, 20 or 23")
+set_property(CACHE CPP_STD PROPERTY STRINGS 17 20 23)
+option(IMPORT_STD "Use 'import std;' instead of #include (C++23; needs a toolchain with std modules)" OFF)
+
+if(IMPORT_STD)
+  if(CMAKE_VERSION VERSION_LESS 3.30)
+    message(FATAL_ERROR "IMPORT_STD needs CMake >= 3.30 (module scanning).")
+  endif()
+  set(CPP_STD "23")
+  # `import std` is gated by an experimental UUID that changes between CMake
+  # releases. Known gates are filled in; override the cache variable yourself if
+  # your CMake is newer than this list (the configure error names the expected
+  # value).
+  if(NOT CMAKE_EXPERIMENTAL_CXX_IMPORT_STD)
+    if(CMAKE_VERSION VERSION_LESS 3.31)
+      set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "0e5b6991-d74f-4b3d-a41c-cf096e0b2508")
+    elseif(CMAKE_VERSION VERSION_LESS 4.4)
+      set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "a9e1cf81-9932-4810-974b-6eccaf14e457")
+    else()
+      set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "f35a9ac6-8463-4d38-8eec-5d6008153e7d")
+    endif()
+  endif()
+endif()
+
 # Language is decided after the source file is known, so the project starts
 # with no languages enabled: a C-only user must not need a C++ compiler.
 project(single_file_runner LANGUAGES NONE)
-
-set(GRAPHICS OFF CACHE BOOL "Link the legacy graphics.h (libbgi). Windows + MinGW only.")
 
 # ---------------------------------------------------------------------------
 # Pick the source file: -DFILE=..., else src/main.cpp / src/main.c, else the
@@ -43,31 +67,36 @@ else()
   enable_language(CXX)
 endif()
 
+if(IMPORT_STD AND _ext STREQUAL ".c")
+  message(FATAL_ERROR "IMPORT_STD is a C++ feature; ${FILE} is C.")
+endif()
+
 add_executable(app "${FILE}")
 
-target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set_target_properties(app PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  set_target_properties(app PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED ON)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|MSVC")
+  set_target_properties(app PROPERTIES
+    CXX_STANDARD "${CPP_STD}"
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF)
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(app PRIVATE -Wall -Wextra)
 endif()
-
-# ---------------------------------------------------------------------------
-# graphics.h: the Turbo C++ API, reimplemented by libbgi (WinBGIm). It is a
-# Win32 library built for MinGW, so it cannot be linked anywhere else.
-# ---------------------------------------------------------------------------
-if(GRAPHICS)
-  if(NOT WIN32)
-    message(FATAL_ERROR "GRAPHICS=ON needs Windows + MinGW (libbgi is a Win32 library).")
-  endif()
-  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib/libbgi.a")
-    message(FATAL_ERROR "lib/libbgi.a is missing.")
-  endif()
-  target_link_libraries(app PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libbgi.a"
-    gdi32 comdlg32 uuid oleaut32 ole32 msimg32)
-  target_link_options(app PRIVATE -static-libgcc -static-libstdc++)
-  message(STATUS "graphics.h enabled: linking lib/libbgi.a")
+if(IMPORT_STD)
+  # CXX_MODULE_STD alone does not flip scanning on for an existing target.
+  set_target_properties(app PROPERTIES CXX_MODULE_STD ON CXX_SCAN_FOR_MODULES ON)
 endif()
 
-message(STATUS "Building ${FILE} -> ${CMAKE_BINARY_DIR}/app")
+target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set_target_properties(app PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+if(_ext STREQUAL ".c")
+  message(STATUS "Building ${FILE} (C17) -> ${CMAKE_BINARY_DIR}/app")
+elseif(IMPORT_STD)
+  message(STATUS "Building ${FILE} (C++${CPP_STD}, import std) -> ${CMAKE_BINARY_DIR}/app")
+else()
+  message(STATUS "Building ${FILE} (C++${CPP_STD}) -> ${CMAKE_BINARY_DIR}/app")
+endif()

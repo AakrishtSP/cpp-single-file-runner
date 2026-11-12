@@ -1,90 +1,99 @@
-# Graphics.h Template for Visual Studio Code
+# Single-file C/C++ runner (CMake + VS Code)
 
-This template provides an easy-to-use setup for running C++ graphics programs using `<graphics.h>` in Visual Studio Code. Setting up `graphics.h` can be challenging due to compatibility issues, but this template simplifies the process by pre-configuring the required files and folder structure.
+Build and run one `.c` / `.cpp` file without writing a build system, on Linux,
+macOS and Windows. `src/main.cpp` is the default target; any other file can be
+built with one flag. Legacy `<graphics.h>` (libbgi) is supported as an opt-in
+for MinGW, because that library is the reason this template exists.
 
-## Features
+## Quick start
 
--   Pre-configured folder structure for headers and libraries.
--   `graphics.h` and `libbgi.a` included in the template.
--   VS Code configurations for building and debugging.
--   MinGW setup instructions for seamless integration.
-
-## Why `graphics.h` is Hard to Set Up in VS Code
-
-The `graphics.h` library was originally designed for Turbo C++ and is not natively supported by modern compilers. This makes it challenging to:
-
--   Set up the necessary library files.
--   Ensure proper linking during compilation.
--   Handle compatibility with modern IDEs like Visual Studio Code.
-
-This template overcomes these issues by including all necessary files and configuring the build system for you.
-
-## Folder Structure
-
-The template is organized as follows:
-
-```
-graphics template/
-├── include/        # Contains header files
-│   ├── graphics.h
-│   ├── winbgi.h
-├── lib/            # Contains static libraries
-│   ├── libbgi.a
-├── src/            # Source files go here (e.g., main.cpp)
-├── build/          # Compiled binaries will be generated here
-├── .vscode/        # VS Code configurations
-│   ├── launch.json
-│   ├── tasks.json
-│   ├── c_cpp_properties.json
+```bash
+./run.sh                 # Linux / macOS / Git Bash: build src/main.cpp, run it
+./run.ps1                # Windows PowerShell: same thing
+cmake -S . -B build && cmake --build build && ./build/app   # plain CMake
 ```
 
-Simply place your C++ source files inside the `src/` folder, and the template will handle the rest.
+Build another file (nothing else to edit):
 
-## How to Install MinGW and Add it to PATH
+```bash
+./run.sh -f examples/graphics_demo.cpp
+./run.sh -f path/to/other.c -- --flag 42     # arguments go to the program
+```
 
-1. Download MinGW from the [official website](https://osdn.net/projects/mingw/).
-2. Run the installer and select `gcc`, `g++`, and `gdb` during installation.
-3. Once installed, find the `bin` folder inside your MinGW installation directory (e.g., `C:\MinGW\bin`).
-4. Add the `bin` folder to your system's PATH:
-    - Open System Properties > Advanced > Environment Variables.
-    - Find the `Path` variable, click Edit, and add the path to the `bin` folder.
-5. Verify the installation by running `gcc --version` and `g++ --version` in a terminal.
+## Flags
 
-## How to Clone and Use This Template
+| `run.sh` | `run.ps1` | Meaning |
+|---|---|---|
+| `-f, --file <path>` | `-File <path>` | Source file to build (default `src/main.cpp`) |
+| `-r, --release` | `-Release` | Release build instead of Debug |
+| `-g, --graphics` | `-Graphics` | Link `lib/libbgi.a` (`GRAPHICS=ON`) |
+| `-c, --clean` | `-Clean` | Delete `build/` first |
+| `-B, --build-only` | `-BuildOnly` | Build without running |
+| `-h, --help` | — | Usage |
+| `-- args...` | `-- args...` | Everything after `--` is passed to the program |
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/AakrishtSP/graphics-template.git
-    ```
-2. Navigate to the project directory:
-    ```bash
-    cd graphics-template
-    ```
-3. Open the project in VS Code:
-    ```bash
-    code .
-    ```
-4. Add your source files to the `src/` folder.
-5. Build and run your project:
-    - Build: Press `Ctrl+Shift+B`.
-    - Run: Press `F5`.
+The scripts use Ninja when it is installed (same generator everywhere, faster
+builds), otherwise they let CMake choose. Override with `CMAKE_GENERATOR`.
 
-## How to Use This Template in Your Projects
+## Layout
 
-1. Clone this template as the starting point for your project.
-2. Copy your existing C++ source files into the `src/` folder.
-3. Modify or add new files as needed within the `src/` directory.
-4. Follow the build and run instructions provided above.
+```
+.
+├── CMakeLists.txt          # single-file target, picks C or C++ from the extension
+├── CMakePresets.json       # default / release / graphics / make
+├── run.sh, run.ps1         # configure + build + run helpers
+├── src/main.cpp            # default target
+├── examples/graphics_demo.cpp
+├── include/                # graphics.h, winbgi.h (libbgi headers)
+├── lib/libbgi.a            # static WinBGIm library (MinGW, Win32)
+└── .vscode/                # settings, tasks, launch, IntelliSense, extensions
+```
 
-## Follow Me on GitHub
+`CMakeLists.txt` reads the source from `-DFILE=...`, else `src/main.cpp`,
+else `src/main.c`, else the only file in `src/`. The language is enabled from
+the file extension, so a C-only machine never needs a C++ compiler.
 
-If you find this template useful, consider following me on GitHub for more projects and resources:
-[Github: AakrishtSP](https://github.com/AakrishtSP)
+## `graphics.h`
 
-## Additional Notes
+`graphics.h` is the Turbo C++ API; `libbgi` reimplements it on Win32, so it only
+links on **Windows with MinGW**:
 
--   Ensure you use `g++` with the correct flags as configured in `tasks.json` to avoid issues with linking `graphics.h`.
--   If you encounter any issues, check that the `include` and `lib` directories are correctly referenced in the configurations.
--   This template is designed for Windows and may require modifications for other platforms.
+```bash
+./run.sh -g -f examples/graphics_demo.cpp
+```
 
-Happy coding!
+`GRAPHICS=ON` adds `lib/libbgi.a` and the Win32 libraries it needs (`gdi32`,
+`comdlg32`, `uuid`, `oleaut32`, `ole32`, `msimg32`) and links the C/C++
+runtimes statically, which is what stops the old library from failing at
+startup. On other platforms CMake stops with a clear error instead of a
+confusing link failure.
+
+## VS Code
+
+Open the folder and accept the recommended extensions (`cpptools`,
+`cmake-tools`). Then:
+
+- **Ctrl+Shift+B** — build (`Build` task, default).
+- **Ctrl+Shift+P → Tasks: Run Task** — `Run`, `Run current file`,
+  `Build current file`, `Run (graphics.h)`, `Clean`.
+- **F5** — debug the CMake target with `preLaunchTask: Build`
+  (gdb on Linux/MinGW, lldb on macOS).
+
+`settings.json` already sets the CMake source/build directory, the generator,
+C++20 IntelliSense, `include/` on the include path, and `-Wall -Wextra`.
+`c_cpp_properties.json` reads the compile database, so includes resolve exactly
+as the compiler sees them.
+
+## Other IDEs
+
+`CMakePresets.json` is read by VS Code CMake Tools, CLion, Visual Studio, Qt
+Creator and most CMake-aware editors: pick the `default` preset, or
+`graphics` on Windows. No IDE-specific project files are needed — anything that
+can open a CMake project works.
+
+## Requirements
+
+- CMake ≥ 3.20
+- A C/C++ toolchain: GCC or Clang (Linux/macOS), MinGW-w64 (Windows)
+- Ninja (optional, recommended)
+- PowerShell 5.1+ on Windows if you prefer `run.ps1` over `run.sh` in Git Bash

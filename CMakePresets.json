@@ -1,0 +1,37 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Debug (Ninja)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "Release (Ninja)",
+      "inherits": "default",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "graphics",
+      "displayName": "Debug + graphics.h (Ninja, Windows/MinGW)",
+      "inherits": "default",
+      "cacheVariables": { "GRAPHICS": "ON" }
+    },
+    {
+      "name": "make",
+      "displayName": "Debug (Unix Makefiles, no Ninja needed)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "default", "configurePreset": "default" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "graphics", "configurePreset": "graphics" },
+    { "name": "make", "configurePreset": "make" }
+  ]
+}

@@ -1,13 +1,8 @@
-#include <graphics.h>
+// Default single file. Edit this, then press Run (or ./run.sh).
+// Build another file without editing this one: ./run.sh -f path/to/file.cpp
+#include <iostream>
 
-int main()
-{
-	int gm, gd = DETECT;
-	initgraph(&gd, &gm, NULL);
-
-	// Your code here
-
-	getch();
-	closegraph();
-	return 0;
+int main() {
+    std::cout << "Hello from the single-file CMake runner.\n";
+    return 0;
 }

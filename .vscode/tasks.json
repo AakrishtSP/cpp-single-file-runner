@@ -1,41 +1,54 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Build",
-            "type": "shell",
-            "command": "cmd",
-            "args": [
-                "/c",
-                "if not exist \"${workspaceFolder}\\build\" mkdir \"${workspaceFolder}\\build\"",
-                "&&",
-                "g++",
-                "-std=c++17",
-                "-o",
-                "\"${workspaceFolder}\\build\\${fileBasenameNoExtension}.exe\"",
-                "-g",
-                "\"${file}\"",
-                "-I\"${workspaceFolder}\\include\"",
-                "-L\"${workspaceFolder}\\lib\"",
-                "-lbgi",
-                "-lgdi32",
-                "-lcomdlg32",
-                "-luuid",
-                "-loleaut32",
-                "-lole32"
-            ],
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": ["/c"]
-                }
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": ["$gcc"],
-            "detail": "Builds the current C++ file using g++ and ensures the build folder exists."
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "./run.sh -B",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -BuildOnly" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"],
+      "detail": "CMake configure + build of src/main.cpp"
+    },
+    {
+      "label": "Run",
+      "type": "shell",
+      "command": "./run.sh",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1" },
+      "group": "test",
+      "problemMatcher": ["$gcc"],
+      "detail": "Build and run src/main.cpp"
+    },
+    {
+      "label": "Build current file",
+      "type": "shell",
+      "command": "./run.sh -B -f \"${relativeFile}\"",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -BuildOnly -File \"${relativeFile}\"" },
+      "problemMatcher": ["$gcc"],
+      "detail": "Compile the file open in the editor"
+    },
+    {
+      "label": "Run current file",
+      "type": "shell",
+      "command": "./run.sh -f \"${relativeFile}\"",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -File \"${relativeFile}\"" },
+      "problemMatcher": ["$gcc"],
+      "detail": "Compile and run the file open in the editor"
+    },
+    {
+      "label": "Run (graphics.h)",
+      "type": "shell",
+      "command": "./run.sh -g -f examples/graphics_demo.cpp",
+      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -Graphics -File examples/graphics_demo.cpp" },
+      "problemMatcher": ["$gcc"],
+      "detail": "Link libbgi and run the graphics demo (Windows + MinGW)"
+    },
+    {
+      "label": "Clean",
+      "type": "shell",
+      "command": "rm -rf build",
+      "windows": { "command": "powershell -NoProfile -Command \"if (Test-Path build) { Remove-Item -Recurse -Force build }\"" },
+      "detail": "Delete the build directory"
+    }
+  ]
 }

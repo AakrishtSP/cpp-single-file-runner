@@ -1,36 +1,15 @@
-# Build artifacts
-/build/
-*.exe
-*.out
+# build output
+build/
+build-*/
+out/
 *.o
 *.obj
-*.so
-*.a
-*.lib
-*.dll
+*.exe
+*.out
 
-# IDE-specific files
-.vscode/
+# editors / OS
 .idea/
-*.code-workspace
-
-# System files
+.vs/
+*.swp
 .DS_Store
 Thumbs.db
-
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.bak
-
-# Generated files
-*.gch
-*.d
-*.dep
-
-# Templete-specific files
-!lib/
-!lib/*
-!.vscode/
-!.vscode/*

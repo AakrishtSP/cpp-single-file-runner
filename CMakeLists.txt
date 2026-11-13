@@ -11,11 +11,10 @@ if(IMPORT_STD)
     message(FATAL_ERROR "IMPORT_STD needs CMake >= 3.30 (module scanning).")
   endif()
   set(CPP_STD "23")
-  # `import std` is gated by an experimental UUID that changes between CMake
-  # releases. Known gates are filled in; override the cache variable yourself if
-  # your CMake is newer than this list (the configure error names the expected
-  # value).
-  if(NOT CMAKE_EXPERIMENTAL_CXX_IMPORT_STD)
+  # CMake 4.5 made `import std` a normal feature; before that it is gated by an
+  # experimental UUID that changes per release and must be set before the
+  # compiler is detected. All released gates are filled in below.
+  if(CMAKE_VERSION VERSION_LESS 4.5 AND NOT CMAKE_EXPERIMENTAL_CXX_IMPORT_STD)
     if(CMAKE_VERSION VERSION_LESS 3.31)
       set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "0e5b6991-d74f-4b3d-a41c-cf096e0b2508")
     elseif(CMAKE_VERSION VERSION_LESS 4.4)
@@ -86,8 +85,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(app PRIVATE -Wall -Wextra)
 endif()
 if(IMPORT_STD)
-  # CXX_MODULE_STD alone does not flip scanning on for an existing target.
-  set_target_properties(app PROPERTIES CXX_MODULE_STD ON CXX_SCAN_FOR_MODULES ON)
+  # Scanning is what actually enables `import std`; since CMake 4.5 nothing else
+  # is needed. Older releases additionally want CXX_MODULE_STD on the target.
+  set_target_properties(app PROPERTIES CXX_SCAN_FOR_MODULES ON)
+  if(CMAKE_VERSION VERSION_LESS 4.5)
+    set_target_properties(app PROPERTIES CXX_MODULE_STD ON)
+  endif()
 endif()
 
 target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")

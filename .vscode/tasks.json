@@ -5,7 +5,7 @@
       "label": "Build",
       "type": "shell",
       "command": "./run.sh -B",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -BuildOnly" },
+      "windows": { "command": "python run.py -B" },
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$gcc"],
       "detail": "CMake configure + build of src/main.cpp"
@@ -14,7 +14,7 @@
       "label": "Run",
       "type": "shell",
       "command": "./run.sh",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1" },
+      "windows": { "command": "python run.py" },
       "group": "test",
       "problemMatcher": ["$gcc"],
       "detail": "Build and run src/main.cpp"
@@ -23,7 +23,7 @@
       "label": "Build current file",
       "type": "shell",
       "command": "./run.sh -B -f \"${relativeFile}\"",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -BuildOnly -File \"${relativeFile}\"" },
+      "windows": { "command": "python run.py -B -f \"${relativeFile}\"" },
       "problemMatcher": ["$gcc"],
       "detail": "Compile the file open in the editor"
     },
@@ -31,7 +31,7 @@
       "label": "Run current file",
       "type": "shell",
       "command": "./run.sh -f \"${relativeFile}\"",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -File \"${relativeFile}\"" },
+      "windows": { "command": "python run.py -f \"${relativeFile}\"" },
       "problemMatcher": ["$gcc"],
       "detail": "Compile and run the file open in the editor"
     },
@@ -39,16 +39,16 @@
       "label": "Run current file with import std",
       "type": "shell",
       "command": "./run.sh -i -f \"${relativeFile}\"",
-      "windows": { "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ./run.ps1 -ImportStd -File \"${relativeFile}\"" },
+      "windows": { "command": "python run.py -i -f \"${relativeFile}\"" },
       "problemMatcher": ["$gcc"],
       "detail": "C++23 std module build of the open file"
     },
     {
       "label": "Clean",
       "type": "shell",
-      "command": "rm -rf build",
-      "windows": { "command": "powershell -NoProfile -Command \"if (Test-Path build) { Remove-Item -Recurse -Force build }\"" },
-      "detail": "Delete the build directory"
+      "command": "rm -rf build build-import-std",
+      "windows": { "command": "cmd /c rmdir /s /q build 2>nul & rmdir /s /q build-import-std 2>nul" },
+      "detail": "Delete the build directories"
     }
   ]
 }
